@@ -30,7 +30,6 @@ void main()
     // compute toLight vector vertex coordinate in VCS
    
    // set gl_Position variable correctly to give the transformed vertex position
-    vec4 textureColor = texture(rgbTexture, textureCoordinate);
 
 	gl_Position = vec4(position,0); // this is a placeholder. It does not correctly set the position 
 	
