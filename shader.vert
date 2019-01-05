@@ -30,7 +30,22 @@ void main()
     // compute toLight vector vertex coordinate in VCS
    
    // set gl_Position variable correctly to give the transformed vertex position
+    vec4 textureColor = texture(rgbTexture, textureCoordinate);
 
-   gl_Position = vec4(0,0,0,0); // this is a placeholder. It does not correctly set the position 
-    
+	gl_Position = vec4(position,0); // this is a placeholder. It does not correctly set the position 
+	
+	GLfloat x,y;
+	x = 1-gl_Position.x/((float)widthTexture);
+	y = 1-gl_Position.z/((float)heightTexture);
+	textureCoordinate = vec2(x,y);
+
+	vec3 colorValues = texture(rgbTexture,textureCoordinate); 
+    gl_Position.y = heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z);
+
+
+    // normal calculation vertexNormal;
+
+    ToLightVector = -vec3(widthTexture/2,widthTexture+heightTexture,heightTexture/2)+gl_Position.xyz;
+    ToCameraVector = vec3(cameraPosition)-gl_Position.xyz;
+
 }
