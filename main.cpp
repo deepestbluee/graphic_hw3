@@ -101,7 +101,7 @@ static void errorCallback(int error,
 void communication()
 {
 
-  glm::mat4 Projection = glm::perspective(glm::radians(c_angle), c_aspect, c_near, c_far);
+  glm::mat4 Projection = glm::perspective(c_angle, c_aspect, c_near, c_far);
   glm::mat4 View = glm::lookAt(c_pos,c_pos+c_gaze,c_up);
   glm::mat4 Model = glm::mat4(1.0f);
 
