@@ -24,7 +24,7 @@ out vec3 ToCameraVector; // Vector from Vertex to Camera;
 int count = 0;
 
 
-
+vec2 textureCoordinates;
 
 vec3 norm(vec3 v1,vec3 v2,vec3 v3)
 {
@@ -52,75 +52,71 @@ void normalFunc(float x, float y, float z)
     {   
         
         float a,b;
-        a = 1-x/(1.0f*widthTexture);
-        b = 2-z/(1.0f*heightTexture);
-        textureCoordinate = vec2(a,b);
-        vec4 colorValues = texture(rgbTexture,textureCoordinate); 
-        north = vec3(x,y,z-1);
-        north.y = heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z);
+        a = 1-x/float(widthTexture);
+        b = 1-(z-1)/float(heightTexture);
+        textureCoordinates = vec2(a,b);
+        vec4 colorValues = texture(rgbTexture,textureCoordinates); 
+        north = vec3(x,heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z),z-1);
         arr[0] = true;
     }
     if(!validCheck(x+1,z-1))
     {
         float a;
         float b;
-        a = -x/(1.0f*widthTexture);
-        b = 2-z/(1.0f*heightTexture);
-        textureCoordinate = vec2(a,b);
-        vec4 colorValues = texture(rgbTexture,textureCoordinate);
-        northeast = vec3(x+1,y,z-1);
+        a = 1-(x+1)/float(widthTexture);
+        b = 1-(z-1)/float(heightTexture);
+        textureCoordinates = vec2(a,b);
+        vec4 colorValues = texture(rgbTexture,textureCoordinates);
+        northeast = vec3(x+1,heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z),z-1);
 
-        northeast.y = heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z);
         arr[1] = true;
     }
     if(!validCheck(x+1,z))
     {
         float a,b;
-        a = -x/(1.0f*widthTexture);
-        b = 1-z/(1.0f*heightTexture);
-        textureCoordinate = vec2(a,b);
-        vec4 colorValues = texture(rgbTexture,textureCoordinate);
+        a = 1-(x+1)/float(widthTexture);
+        b = 1-z/float(heightTexture);
+        textureCoordinates = vec2(a,b);
+        vec4 colorValues = texture(rgbTexture,textureCoordinates);
 
-        east = vec3(x+1,y,z);
-        east.y = heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z);
+        east = vec3(x+1,heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z),z);
 
         arr[2] = true;
     }    
     if(!validCheck(x,z+1))
     {
         float a,b;
-        a = 1-x/(1.0f*widthTexture);
-        b = -z/(1.0f*heightTexture);
-        textureCoordinate = vec2(a,b);
-        vec4 colorValues = texture(rgbTexture,textureCoordinate);
+        a = 1-x/float(widthTexture);
+        b = 1-(z+1)/float(heightTexture);
+        textureCoordinates = vec2(a,b);
+        vec4 colorValues = texture(rgbTexture,textureCoordinates);
 
 
-        south = vec3(x,y,z+1);
-        south.y = heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z);
+        south = vec3(x,heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z),z+1);
+
         arr[3] = true;        
     }
     if(!validCheck(x-1,z+1))
     {
         float a,b;
-        a = 2-x/(1.0f*widthTexture);
-        b = -z/(1.0f*heightTexture);
-        textureCoordinate = vec2(a,b);
-        vec4 colorValues = texture(rgbTexture,textureCoordinate);
+        a = 1-(x-1)/float(widthTexture);
+        b = 1-(z+1)/float(heightTexture);
+        textureCoordinates = vec2(a,b);
+        vec4 colorValues = texture(rgbTexture,textureCoordinates);
 
-        southwest = vec3(x-1,y,z+1);
-        southwest.y = heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z);
+        southwest = vec3(x-1,heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z),z+1);
         arr[4] = true;
     }
     if(!validCheck(x-1,z))
     {
         float a,b;
-        a = 2-x/(1.0f*widthTexture);
-        b = 1-z/(1.0f*heightTexture);
-        textureCoordinate = vec2(a,b);
-        vec4 colorValues = texture(rgbTexture,textureCoordinate);
+        a = 1-(x-1)/float(widthTexture);
+        b = 1-z/float(heightTexture);
+        textureCoordinates = vec2(a,b);
+        vec4 colorValues = texture(rgbTexture,textureCoordinates);
 
-        west = vec3(x-1,y,z);
-        west.y = heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z);
+        west = vec3(x-1,heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z),z);
+        
         arr[5] = true;
     }
 
@@ -164,7 +160,7 @@ void normalFunc(float x, float y, float z)
 
 
 
-   vertexNormal = sumVector/(1.0f*count); 
+   vertexNormal = sumVector/float(count); 
 
    normalize(vertexNormal);
 
@@ -188,20 +184,17 @@ void main()
     vec4 pos = vec4(position,1.0f); // this is a placeholder. It does not correctly set the position 
     // normal calculation vertexNormal;
 
-    float x,y;
-    x = 1-pos.x/(1.0f*widthTexture);
-    y = 1-pos.z/(1.0f*heightTexture);
-    textureCoordinate = vec2(x,y);
+    float xa,ya;
+    xa = 1-pos.x/float(widthTexture);
+    ya = 1-pos.z/float(heightTexture);
+    textureCoordinate = vec2(xa,ya);
 	vec4 colorValues = texture(rgbTexture,textureCoordinate); 
     pos.y = heightFactor*(0.2126*colorValues.x +0.7152*colorValues.y+0.0722*colorValues.z);
 
     normalFunc(pos.x,pos.y,pos.z);
 
-
-
-    ToLightVector = -vec3(widthTexture/2,widthTexture+heightTexture,heightTexture/2)+pos.xyz;
-    ToCameraVector = vec3(cameraPosition)-pos.xyz;
-
+    ToLightVector = normalize(pos.xyz-vec3(widthTexture/2.0,widthTexture+heightTexture,heightTexture/2.0));
+    ToCameraVector = normalize(vec3(cameraPosition)-pos.xyz);
     gl_Position = MVP*pos;
 
 

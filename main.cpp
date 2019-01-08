@@ -6,7 +6,6 @@
 static GLFWwindow * win = NULL;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
 
 
 // Shaders
@@ -100,7 +99,8 @@ static void errorCallback(int error,
 }
 void communication()
 {
-
+  c_pos += c_speed * c_gaze;
+  
   glm::mat4 Projection = glm::perspective(c_angle, c_aspect, c_near, c_far);
   glm::mat4 View = glm::lookAt(c_pos,c_pos+c_gaze,c_up);
   glm::mat4 Model = glm::mat4(1.0f);
@@ -119,13 +119,86 @@ void communication()
 
 }
 
-
-
-void processInput(GLFWwindow *window)
+bool isFull = false ;
+int w,h,wp,hp;
+float pitch = 45;
+float yaw = 90; 
+static void processInput(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+  if (action == GLFW_RELEASE) return;
+  
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
       glfwSetWindowShouldClose(window, true);
 
+  if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+  {
+    heightFactor += 0.5;
+  }
+  if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+  {
+    heightFactor -= 0.5;
+  }
+  if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
+  {
+    c_speed += 0.5;
+  }
+  if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+  {
+    c_speed -= 0.5;
+  }
+  if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+  {
+
+    const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    if(!isFull)
+    {
+      glfwGetWindowSize(win ,&w, &h);
+      glfwGetWindowPos(win ,&wp, &hp);
+      glfwSetWindowMonitor(window, glfwGetPrimaryMonitor(), 0, 0, mode->width, mode->height, mode->refreshRate);
+      isFull = true;
+    }
+    else
+    {
+      isFull = false;     
+      glfwSetWindowMonitor(window, 0,wp, hp, w,h,0);
+    }
+    //glutFullScreen();
+  }
+  
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+  {
+
+    pitch += 1.0;
+    c_gaze.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+    c_gaze.y = sin(glm::radians(pitch-45.0f));
+    c_gaze.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));  
+  }
+
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+  {
+    yaw -= 1.0;
+    c_gaze.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+    c_gaze.y = sin(glm::radians(pitch-45.0f));
+    c_gaze.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));    
+
+
+  }  
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+  {
+    pitch -= 1.0;
+    c_gaze.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+    c_gaze.y = sin(glm::radians(pitch-45.0f));
+    c_gaze.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));    
+  }
+
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+  {
+
+    yaw += 1.0;
+    c_gaze.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+    c_gaze.y = sin(glm::radians(pitch-45.0f));
+    c_gaze.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));    
+  }
 }
 
 
@@ -174,9 +247,8 @@ int main(int argc, char * argv[]) {
   initShaders();
   glUseProgram(idProgramShader);
   initTexture(argv[1], &widthTexture, &heightTexture);
-    //glViewport(0, 0, widthTexture, heightTexture);
 
-  c_pos = glm::vec3(widthTexture/2,widthTexture/10,-widthTexture/4); 
+  c_pos = glm::vec3(widthTexture/2.0,widthTexture/10.0,-widthTexture/4.0); 
   c_up = glm::vec3(0,1,0);
   c_gaze = glm::vec3(0,0,1);
   c_near = 0.1;
@@ -187,10 +259,10 @@ int main(int argc, char * argv[]) {
   heightFactor = 10.0;
 
 
-  glm::vec3 light_Pos = glm::vec3(widthTexture/2,widthTexture+heightTexture,heightTexture/2);
+  glm::vec3 light_Pos = glm::vec3(widthTexture/2.0,widthTexture+heightTexture,heightTexture/2.0);
   
   uni_MVP = glGetUniformLocation(idProgramShader, "MVP");
- // uni_MV = glGetUniformLocation(idProgramShader, "MV");
+  //uni_MV = glGetUniformLocation(idProgramShader, "MV");
   uni_cameraPosition = glGetUniformLocation(idProgramShader, "cameraPosition");
   uni_heightFactor = glGetUniformLocation(idProgramShader, "heightFactor"); 
   
@@ -221,19 +293,17 @@ int main(int argc, char * argv[]) {
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
   
-  glDrawElements(GL_TRIANGLES,indicesSize/sizeof(int),GL_UNSIGNED_INT, 0);
+  
+  glfwSetKeyCallback(win, processInput);
 
+  glEnable(GL_DEPTH_TEST);
 
   while (!glfwWindowShouldClose(win)) {
     
-    processInput(win);
     clear();
-
     communication();
-
     glUseProgram(idProgramShader);
     glDrawElements(GL_TRIANGLES,indicesSize/sizeof(int),GL_UNSIGNED_INT, 0);
-
     glfwSwapBuffers(win);
     glfwPollEvents();
   }
